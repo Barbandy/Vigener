@@ -1,25 +1,24 @@
 import sys
+import argparse
 
 
-def read_file(fname):
+def writeFile(fname, code):
     try:
-        f = open(fname, 'rb')
-        text = f.read()
-        f.close()
+        with open(fname, 'wb') as f:
+		    f.write(''.join(code))
     except IOError:
-        print("\nRead error\n")
-    return text
+        exit('No such file or directory ' + fname)
 
 
-def write_file(fname, code):
+def readFile(fname):
     try:
-        f = open(fname, 'wb')
-        f.write(''.join(code))
-        f.close()
+        with open(fname, 'rb') as f:
+            text = f.read()
     except IOError:
-        print("\nWrite error\n")
-   
-   
+        exit('No such file or directory ' + fname)
+    return text	
+
+	
 def vigenere(data, key, func):
     key_len = len(key)
     output = []
@@ -29,28 +28,32 @@ def vigenere(data, key, func):
     return output
 
 
-def print_start():
-    print"Vigenere cipher\n"
-    print"Enter the input parameters:\n"
-    print"\n<name of program> <file_in> <file_key> <file_out> <c / d>\n"
+def printUsage():
+    print"Enter the input parameters:"
+    print"<name of program> <file_in> <file_key> <file_out> <c / d>"
     sys.exit(-1)
 
+	
+def getArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inFile')
+    parser.add_argument('keyFile')
+    parser.add_argument('outFile')
+    parser.add_argument('cryptOrDecrypt', choices=['c', 'd'])
+    return parser.parse_args()	
 
+	
 if __name__ == "__main__":
     print"Vigenere cipher"
-    in_text = ""
-    in_key = ""
-    out_code = ""
-
-    file_in = sys.argv[1]
-    file_key = sys.argv[2]
-    file_out = sys.argv[3]
-    action = sys.argv[4]
-
+    data = ""
+    key = ""
+    code = ""
     if len(sys.argv) < 4 or len(sys.argv) > 5:
-        print_start()
-    in_text = read_file(file_in)
-    in_key = read_file(file_key)
+        printUsage()
+    args = getArgs()
+    data = readFile(args.inFile)
+    key = readFile(args.keyFile)
+
     do = {'c': lambda x, y: x + y, 'd': lambda x, y: x - y}
-    out_code = vigenere(in_text, in_key, do[action])
-    write_file(file_out, out_code)
+    code = vigenere(data, key, do[args.cryptOrDecrypt])
+    writeFile(args.outFile, code)
